@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ders Programı Hazırlama</title>
+<style>
+:root{--bg:#e9edf1;--paper:#fff;--ink:#0f1720;--muted:#5b6773;--rule:#d2d9e0;--red:#b3261e;
+--c1:#1b6aa5;--c2:#0b7a63;--c3:#a45a16;--c4:#6c3e96;
+--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+--serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--sans)}
+.wrap{max-width:1200px;margin:0 auto;padding:20px 16px 60px}
+h1{font:600 clamp(22px,4vw,30px)/1.15 var(--serif);margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin:0}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.sp{flex:1}
+button,select,input{font:inherit}
+.btn{border:1px solid var(--rule);background:var(--paper);color:var(--ink);padding:7px 13px;border-radius:999px;cursor:pointer;font-size:13px;font-weight:600;display:inline-block}
+.btn:hover{border-color:var(--ink)}
+.btn.pri{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.del{color:var(--red)}
+.btn[disabled]{opacity:.4;cursor:default}
+.don{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.don input{width:120px;padding:6px 10px;border:1px solid var(--rule);border-radius:999px;background:var(--paper)}
+.tabs{display:flex;gap:4px;border-bottom:1.5px solid var(--ink);margin-top:18px;flex-wrap:wrap}
+.tab{border:0;background:none;padding:9px 16px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:6px 6px 0 0}
+.tab[aria-selected=true]{background:var(--ink);color:#fff}
+.tab small{font-family:var(--mono);opacity:.7;margin-left:6px}
+.warn{font:600 12px var(--mono);color:var(--red)}
+.hint{color:var(--muted);font-size:12px;margin:10px 0 0}
+.gw{overflow-x:auto;margin-top:12px}
+table{border-collapse:collapse;width:100%;background:var(--paper)}
+.g{min-width:880px}
+th,td{border:1px solid var(--rule);vertical-align:top;padding:6px;text-align:left}
+th{background:#f4f6f8;font:600 12px var(--mono);letter-spacing:.06em;text-transform:uppercase}
+th.t{width:92px;text-align:right;color:var(--muted)}
+.k{font:600 11px var(--mono);color:var(--ac,#000)}
+.a{font-weight:600;line-height:1.25}
+.m{font-size:12px;color:var(--muted)}
+.c{border-left:3px solid var(--ac);padding:4px 6px 5px 8px;margin-bottom:6px;background:#f7f9fb;cursor:pointer;border-radius:0 3px 3px 0}
+.c:hover{background:#eef2f6}
+.c.bad{background:#fdecea;border-left-color:var(--red)}
+.w{font:600 10px var(--mono);color:var(--red);text-transform:uppercase;margin-top:2px}
+.add{width:100%;border:1px dashed var(--rule);background:none;color:var(--muted);padding:3px;border-radius:3px;cursor:pointer;font-size:12px}
+.add:hover{border-color:var(--ink);color:var(--ink)}
+dialog{border:0;border-radius:8px;padding:0;width:min(470px,94vw);box-shadow:0 20px 60px #0004}
+dialog::backdrop{background:#0f172066}
+.f{padding:18px;display:grid;gap:10px}
+.f h2{margin:0;font:600 19px var(--serif)}
+.f label{display:grid;gap:3px;font-size:12px;color:var(--muted);font-weight:600}
+.f input,.f select{padding:8px 10px;border:1px solid var(--rule);border-radius:6px;background:#fff;color:var(--ink);font-size:14px}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fb{display:flex;gap:8px;align-items:center;margin-top:4px}
+:focus-visible{outline:2px solid var(--c1);outline-offset:2px}
+.dtabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:16px}
+.dtab{border:1px solid var(--rule);background:var(--paper);color:var(--muted);padding:7px 14px;border-radius:999px;cursor:pointer;font-weight:600;font-size:13px}
+.dtab[aria-pressed=true]{background:var(--c1);border-color:var(--c1);color:#fff}
+.dtab small{font-family:var(--mono);opacity:.75;margin-left:6px}
+.st[aria-pressed=true]{background:var(--ink);border-color:var(--ink)}
+.cl{margin-top:16px;background:var(--paper);border:1px solid var(--rule);border-left:3px solid var(--red);border-radius:4px;padding:12px 16px}
+.cl h2{font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin:0 0 8px}
+.cl ul{margin:0;padding-left:18px}.cl li{font-size:13px;margin-bottom:4px}
+.fw{background:#fdecea;color:var(--red);border-radius:6px;padding:8px 10px;font-size:12px;font-weight:600}
+#pa{display:none}
+@media print{
+@page{size:A4 landscape;margin:10mm}
+body{background:#fff}
+.wrap{display:none}
+#pa{display:block}
+.ps{break-after:page}
+.ps:last-child{break-after:auto}
+.ps h2{font:600 18px var(--serif);margin:0}
+.ps p{margin:2px 0 8px;font-size:11px;color:#555}
+.pt th,.pt td{border:1px solid #777;padding:5px;font-size:10.5px}
+.pt th{background:#eee}
+.pc{margin-bottom:5px;padding-bottom:4px;border-bottom:1px dotted #bbb}
+.pc .m{color:#444}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Ders Programı Hazırlama</h1>
+  <p class="sub">Bölümü ve programı seç, tablodaki “+ ders” ile ders gir; çıktıyı Excel veya PDF olarak al.</p>
+  <div class="bar">
+    <label class="don">Dönem <input id="don" aria-label="Dönem" readonly></label>
+    <button class="btn" id="lg" type="button">Giriş</button>
+    <span class="hint" id="st" style="margin:0">Yükleniyor…</span>
+    <span class="sp"></span>
+    <button class="btn" id="xa" type="button">Excel · tüm bölümler</button>
+    <button class="btn" id="pall" type="button">PDF · tüm bölümler</button>
+    <button class="btn" id="bk" type="button">Yedekle</button>
+    <label class="btn">Yükle<input id="ld" type="file" accept=".json,application/json" hidden></label>
+  </div>
+  <div class="dtabs" id="dtabs"></div>
+  <div class="tabs" id="tabs" role="tablist"></div>
+  <div class="dtabs" id="stabs" style="margin-top:10px" hidden></div>
+  <div class="bar">
+    <button class="btn pri" id="ad" type="button">+ Ders ekle</button>
+    <button class="btn" id="xp" type="button">Excel · bu program</button>
+    <button class="btn" id="pp" type="button">PDF · bu program</button>
+    <button class="btn" id="xb" type="button">Excel · bu bölüm</button>
+    <button class="btn" id="pb" type="button">PDF · bu bölüm</button>
+    <span class="sp"></span>
+    <span class="warn" id="wn"></span>
+  </div>
+  <div class="gw" id="gw"></div>
+  <section class="cl" id="cl" hidden><h2>Çakışma uyarıları · tüm bölümler</h2><ul id="cll"></ul></section>
+  <p class="hint">Veriler GitHub deposundaki data/ klasöründe tutulur; değişiklikler yaklaşık 45 saniyede herkese yansır. Düzenlemek için “Giriş” ile erişim anahtarınızı girin. PDF için yazdırma penceresinde “PDF olarak kaydet”i seçin. Hoca ve derslik çakışmaları bölümler arasında da kontrol edilir (UZEM hariç).</p>
+</div>
+
+<dialog id="dl">
+<form class="f" id="f" method="dialog">
+  <h2 id="ft">Ders ekle</h2>
+  <div class="r2">
+    <label>Ders kodu<input name="kod" required></label>
+    <label id="sl">Sınıf<select name="sinif"><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
+  </div>
+  <label>Ders adı<input name="ad" required></label>
+  <label>Öğretim üyesi<input name="hoca" required></label>
+  <div class="r2">
+    <label>Gün<select name="gun"></select></label>
+    <label>Derslik<select name="yersec"></select></label>
+  </div>
+  <div class="r2" id="yn" hidden>
+    <label>Yeni derslik adı<input name="yeni"></label>
+    <label>Kapasite (isteğe bağlı)<input name="ykap" type="number" min="0"></label>
+  </div>
+  <div class="r2">
+    <label>Saat<select name="saat"></select></label>
+    <label>Kontenjan (isteğe bağlı)<input name="kont" type="number" min="0"></label>
+  </div>
+  <div class="r2" id="cs" hidden>
+    <label>Başlangıç<input type="time" name="bas"></label>
+    <label>Bitiş<input type="time" name="bit"></label>
+  </div>
+  <div class="fw" id="fw" hidden></div>
+  <div class="fb">
+    <button type="button" class="btn del" id="fd">Sil</button>
+    <span class="sp"></span>
+    <button type="button" class="btn" id="fx">Vazgeç</button>
+    <button class="btn pri">Kaydet</button>
+  </div>
+</form>
+</dialog>
+<div id="pa"></div>
+
+<script>
+const GUN=["Pazartesi","Salı","Çarşamba","Perşembe","Cuma"];
+const GD=[["09:25","12:00"],["13:30","16:05"]];
+const PR=[{k:"lisans",l:"Lisans",s:GD},{k:"tezli",l:"Tezli YL",s:GD},
+  {k:"tezsiz",l:"Tezsiz YL",s:[["17:00","20:00"],["20:00","23:00"]]},{k:"doktora",l:"Doktora",s:GD}];
+const BL=[{k:"iktisat",l:"İktisat",s:"İktisat"},{k:"isletme",l:"İşletme",s:"İşletme"},
+  {k:"ulustic",l:"Uluslararası Ticaret ve Lojistik",s:"Ulus.Tic.Loj."},{k:"maliye",l:"Maliye",s:"Maliye"},
+  {k:"sbky",l:"Siyaset Bilimi ve Kamu Yönetimi",s:"SBKY"}];
+const bn=k=>(BL.find(x=>x.k===k)||{l:k}).l,pn=k=>PR.find(x=>x.k===k).l;
+const KEY="sbky_ders_prog_v1";
+const $=s=>document.querySelector(s);
+const ls=(k,v)=>{try{return v===undefined?localStorage.getItem(k):localStorage.setItem(k,v)}catch(e){return null}};
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const dk=t=>{const[a,b]=t.split(":").map(Number);return a*60+b};
+const key=c=>c.bas+"-"+c.bit;
+const norm=s=>(s||"").toLocaleLowerCase("tr").replace(/\s+/g," ").trim();
+const ny=s=>norm(s).replace(/[\s-]/g,"");
+const TT=/^(prof|doç|dr|öğr|üyesi|arş|gör|uzm|öğretim|elemanı)\.?$/;
+const hs=s=>(s||"").toLocaleLowerCase("tr").split(/\s*[·;,\/&+]\s*/).map(n=>n.split(/\s+/).filter(w=>w&&!TT.test(w)).join(" ")).filter(Boolean);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const cur=()=>PR.find(x=>x.k===P);
+let C=[],DONEM={donem:"",kilit:false},TOK=ls("sbky_tok")||"",CAN=false,SHA={},ETAG="";
+let P="lisans",B=ls("sbky_bol")||"sbky",ED=null,S="hepsi",BLOCK=false,DON="";
+/* ---------- GitHub katmanı ---------- */
+const GH=(()=>{const m=location.hostname.match(/^(.+)\.github\.io$/);
+  return{o:m?m[1]:"KULLANICI",r:(m&&location.pathname.split("/")[1])||"ders-programi",br:"main"}})();
+let EXTRA=[];
+const canEdit=()=>CAN&&!DONEM.kilit;
+const guard=()=>{if(canEdit())return true;alert(DONEM.kilit?"Dönem programı kilitli; düzenleme kapalı.":"Düzenlemek için önce “Giriş” ile GitHub erişim anahtarınızı girin.");return false};
+const hm=()=>new Date().toLocaleTimeString("tr",{hour:"2-digit",minute:"2-digit"});
+const st=t=>{$("#st").textContent=t};
+const api=(path,o={})=>fetch(`https://api.github.com/repos/${GH.o}/${GH.r}${path?"/"+path:""}`,{...o,headers:{Accept:"application/vnd.github+json",...(TOK?{Authorization:"Bearer "+TOK}:{}),...(o.headers||{})}});
+const dec=b=>new TextDecoder().decode(Uint8Array.from(atob(b.replace(/\s/g,"")),c=>c.charCodeAt(0)));
+const enc=s=>{let b="";new TextEncoder().encode(s).forEach(x=>b+=String.fromCharCode(x));return btoa(b)};
+async function check(){
+  CAN=false;if(!TOK)return;
+  try{const r=await api("");CAN=r.ok&&!!(await r.json()).permissions?.push}catch(e){}
+}
+async function pullOne(k){
+  const r=await api(`contents/data/${k}.json?ref=${GH.br}`,{cache:"no-store"});
+  if(!r.ok)throw new Error("GitHub "+r.status);
+  const f=await r.json(),j=JSON.parse(dec(f.content));SHA[k]=f.sha;
+  if(k==="donem")DONEM=j;
+  else if(k==="derslikler")EXTRA=j.derslikler||[];
+  else C=C.filter(c=>c.bol!==k).concat((j.dersler||[]).map(c=>({...c,bol:k})));
+}
+async function pull(force){
+  const r=await api(`contents/data?ref=${GH.br}`,{cache:"no-store",headers:force||!ETAG?{}:{"If-None-Match":ETAG}});
+  if(r.status===304)return;
+  if(!r.ok)throw new Error("GitHub "+r.status);
+  ETAG=r.headers.get("ETag");
+  for(const f of await r.json()){
+    const k=f.name.replace(/\.json$/,"");
+    if(f.name.endsWith(".json")&&SHA[k]!==f.sha)await pullOne(k);
+  }
+  DON=DONEM.donem||DON;loginUI();render();
+}
+async function mutate(bol,msg,fn){
+  for(let i=0;i<3;i++){
+    if(i)await pullOne(bol);
+    const next=fn(C.filter(c=>c.bol===bol));
+    const r=await api(`contents/data/${bol}.json`,{method:"PUT",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({message:msg,branch:GH.br,sha:SHA[bol],
+        content:enc(JSON.stringify({dersler:next.map(({bol:_,...c})=>c)},null,1)+"\n")})});
+    if(r.ok){SHA[bol]=(await r.json()).content.sha;C=C.filter(c=>c.bol!==bol).concat(next);return}
+    if(r.status!==409&&r.status!==422)throw new Error("GitHub "+r.status);
+  }
+  throw new Error("Kayıt çakıştı, lütfen tekrar deneyin.");
+}
+function sync(bol,msg,fn){
+  st("Kaydediliyor…");
+  return mutate(bol,msg,fn).then(()=>{st("Kaydedildi "+hm());render()})
+    .catch(e=>{st("Hata");alert("Kaydedilemedi: "+e.message)});
+}
+const loginUI=()=>{$("#lg").textContent=CAN?"Çıkış":"Giriş";$("#ad").disabled=!canEdit();$("#don").value=DON};
+/* ---------- derslik listesi (Ders Düzeni kapasiteleri) ---------- */
+const DERS=[["Z-01",220],["Z-02",78],["Z-03",92],["Z-04",94],["Z-05",92],["Z-06",78],["Z-07",94],["Z-08",112],["A-101",200],["A-103",200],["D-102",56],["D-104",56]];
+const rooms=()=>[...DERS,...EXTRA.filter(x=>!DERS.some(d=>ny(d[0])===ny(x[0])))];
+const cap=y=>{const r=rooms().find(x=>ny(x[0])===ny(y));return r?+r[1]||0:0};
+const yerV=f=>f.yersec.value==="__yeni"?f.yeni.value.trim():f.yersec.value;
+function fillRooms(sel){
+  sel.innerHTML='<option value="">— Belirtilmedi</option>'+rooms().map(([n,c])=>`<option value="${esc(n)}">${esc(n)}${+c?` · ${c} kişilik`:""}</option>`).join("")+'<option value="UZEM">UZEM</option><option value="__yeni">+ Yeni derslik ekle…</option>';
+}
+async function addRoom(ad,k){
+  for(let i=0;i<3;i++){
+    if(i)await pullOne("derslikler");
+    const list=EXTRA.filter(x=>ny(x[0])!==ny(ad)).concat([[ad,k]]);
+    const r=await api("contents/data/derslikler.json",{method:"PUT",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({message:"Derslik eklendi: "+ad,branch:GH.br,sha:SHA.derslikler,content:enc(JSON.stringify({derslikler:list})+"\n")})});
+    if(r.ok){SHA.derslikler=(await r.json()).content.sha;EXTRA=list;return}
+    if(r.status!==409&&r.status!==422)throw new Error("GitHub "+r.status);
+  }
+  throw new Error("Kayıt çakıştı.");
+}
+
+/* ---------- çakışmalar ---------- */
+function clash(a,b){
+  if(a.gun!==b.gun||!(dk(a.bas)<dk(b.bit)&&dk(b.bas)<dk(a.bit)))return[];
+  const t=[],hb=hs(b.hoca);
+  if(hs(a.hoca).some(x=>hb.includes(x)))t.push("Hoca");
+  if(a.yer&&ny(a.yer)===ny(b.yer)&&!/uzem/i.test(a.yer))t.push("Derslik");
+  if(a.prog==="lisans"&&b.prog==="lisans"&&a.bol===b.bol&&a.sinif===b.sinif)t.push("Sınıf");
+  return t;
+}
+function conf(){
+  const m=new Map(),L=[],add=(a,b,t)=>{const r=m.get(a.id)||[];r.push(t+": "+b.kod+(b.bol!==a.bol?" ("+bn(b.bol)+")":""));m.set(a.id,r)};
+  for(let i=0;i<C.length;i++)for(let j=i+1;j<C.length;j++){
+    const a=C[i],b=C[j];
+    clash(a,b).forEach(t=>{add(a,b,t);add(b,a,t);L.push([t,a,b])});
+  }
+  m.L=L;return m;
+}
+
+/* ---------- tablo ---------- */
+function rows(p,b=B){
+  const std=PR.find(x=>x.k===p).s.map(s=>s.join("-"));
+  const ex=[...new Set(C.filter(c=>c.bol===b&&c.prog===p).map(key))].filter(k=>!std.includes(k));
+  return [...std,...ex].sort((a,b)=>dk(a.split("-")[0])-dk(b.split("-")[0]));
+}
+function card(c,cf,pr){
+  const w=cf.get(c.id),L=c.prog==="lisans";
+  return `<div class="${pr?"pc":"c"+(w?" bad":"")}"${pr?"":` data-id="${c.id}" tabindex="0" style="--ac:var(--c${L?c.sinif:1})"`}>
+<div class="k">${esc(c.kod)}${L?" · "+esc(c.sinif)+". sınıf":""}</div><div class="a">${esc(c.ad)}</div>
+<div class="m">${esc(c.hoca)}${c.yer?" · "+esc(c.yer):""}</div>${w&&!pr?`<div class="w">${esc(w.join(" · "))}</div>`:""}</div>`;
+}
+function grid(p,pr,b=B,sn="hepsi"){
+  const cf=conf(),L=C.filter(c=>c.bol===b&&c.prog===p&&(p!=="lisans"||sn==="hepsi"||c.sinif===sn));
+  let h=`<table class="${pr?"pt":"g"}"><thead><tr><th class="t">Saat</th>${GUN.map(g=>`<th>${g}</th>`).join("")}</tr></thead><tbody>`;
+  rows(p,b).forEach(r=>{
+    const[b,e]=r.split("-");
+    h+=`<tr><th class="t">${b}<br>${e}</th>`;
+    GUN.forEach(g=>{
+      const cs=L.filter(c=>c.gun===g&&key(c)===r)
+        .sort((x,y)=>(x.sinif||"").localeCompare(y.sinif||"")||x.kod.localeCompare(y.kod));
+      h+=`<td>${cs.map(c=>card(c,cf,pr)).join("")}${pr||!canEdit()?"":`<button class="add" type="button" data-g="${g}" data-r="${r}">+ ders</button>`}</td>`;
+    });
+    h+="</tr>";
+  });
+  return h+"</tbody></table>";
+}
+function render(){
+  $("#dtabs").innerHTML=BL.map(x=>`<button class="dtab" type="button" aria-pressed="${x.k===B}" data-b="${x.k}">${x.l}<small>${C.filter(c=>c.bol===x.k).length}</small></button>`).join("");
+  $("#tabs").innerHTML=PR.map(x=>`<button class="tab" role="tab" aria-selected="${x.k===P}" data-p="${x.k}">${x.l}<small>${C.filter(c=>c.bol===B&&c.prog===x.k).length}</small></button>`).join("");
+  const sl=$("#stabs");sl.hidden=P!=="lisans";
+  sl.innerHTML=P==="lisans"?[["hepsi","Tüm sınıflar"],["1","1. sınıf"],["2","2. sınıf"],["3","3. sınıf"],["4","4. sınıf"]].map(([k,l])=>`<button class="dtab st" type="button" aria-pressed="${k===S}" data-s="${k}">${l}<small>${C.filter(c=>c.bol===B&&c.prog==="lisans"&&(k==="hepsi"||c.sinif===k)).length}</small></button>`).join(""):"";
+  $("#gw").innerHTML=grid(P,false,B,S);
+  const L=conf().L,lab=c=>`${esc(c.kod)} (${esc(bn(c.bol))} · ${esc(pn(c.prog))}${c.prog==="lisans"?" · "+esc(c.sinif)+". sınıf":""})`;
+  $("#wn").textContent=L.length?`⚠ ${L.length} çakışma uyarısı (tüm bölümler)`:"";
+  $("#cl").hidden=!L.length;
+  $("#cll").innerHTML=L.map(([t,a,b])=>`<li><b>${t}</b> · ${a.gun} ${a.bas}–${a.bit}${t==="Derslik"?" · "+esc(a.yer):t==="Hoca"?" · "+esc(a.hoca):""} — ${lab(a)} ↔ ${lab(b)}</li>`).join("");
+}
+
+/* ---------- form ---------- */
+function openF(c,g,r){
+  ED=c;const f=$("#f");
+  $("#ft").textContent=c?"Dersi düzenle":"Ders ekle";
+  $("#fd").hidden=!c;
+  $("#sl").hidden=P!=="lisans";
+  const sl=cur().s.map(s=>s.join("-"));
+  f.saat.innerHTML=sl.map(k=>`<option value="${k}">${k.replace("-"," – ")}</option>`).join("")+'<option value="ozel">Özel saat…</option>';
+  f.gun.innerHTML=GUN.map(x=>`<option>${x}</option>`).join("");
+  const v=c||{kod:"",ad:"",hoca:"",yer:"",sinif:"1",gun:g||GUN[0]};
+  f.kod.value=v.kod;f.ad.value=v.ad;f.hoca.value=v.hoca;fillRooms(f.yersec);
+  {const y=v.yer||"",m=[...f.yersec.options].find(o=>o.value&&o.value!=="__yeni"&&ny(o.value)===ny(y));
+   if(!y)f.yersec.value="";else if(m)f.yersec.value=m.value;else{f.yersec.value="__yeni";f.yeni.value=y;f.ykap.value=""}
+   f.kont.value=v.kont||"";$("#yn").hidden=f.yersec.value!=="__yeni"}
+  f.sinif.value=v.sinif||(S!=="hepsi"?S:"1");f.gun.value=v.gun;
+  const k=c?key(c):(r||sl[0]);
+  if(sl.includes(k))f.saat.value=k;
+  else{f.saat.value="ozel";f.bas.value=k.split("-")[0];f.bit.value=k.split("-")[1]}
+  $("#cs").hidden=f.saat.value!=="ozel";
+  liveW();
+  $("#dl").showModal();
+}
+$("#f").addEventListener("change",e=>{if(e.target.name==="saat")$("#cs").hidden=e.target.value!=="ozel";if(e.target.name==="yersec")$("#yn").hidden=e.target.value!=="__yeni"});
+function liveW(){
+  const f=$("#f"),box=$("#fw");let b,e;
+  if(f.saat.value==="ozel"){b=f.bas.value;e=f.bit.value}else{[b,e]=f.saat.value.split("-")}
+  box.hidden=true;BLOCK=false;
+  if(!b||!e||dk(e)<=dk(b))return;
+  const d={bol:B,prog:P,sinif:P==="lisans"?f.sinif.value:"",hoca:f.hoca.value,yer:yerV(f),gun:f.gun.value,bas:b,bit:e},r=[];
+  C.forEach(c=>{if(!ED||c.id!==ED.id)clash(d,c).forEach(t=>{if(t==="Derslik")BLOCK=true;r.push(`${t==="Derslik"?"DERSLİK ÇAKIŞMASI — kaydedilemez":t+" çakışması"}: ${c.kod} · ${bn(c.bol)} · ${pn(c.prog)}${c.prog==="lisans"?" · "+c.sinif+". sınıf":""}`)})});
+  const kn=+f.kont.value,cp=cap(d.yer);if(kn&&cp&&kn>cp)r.push(`Kapasite: ${d.yer} ${cp} kişilik, kontenjan ${kn}`);
+  if(r.length){box.innerHTML="⚠ "+r.map(esc).join("<br>⚠ ");box.hidden=false}
+}
+["input","change"].forEach(v=>$("#f").addEventListener(v,liveW));
+$("#f").addEventListener("submit",async e=>{
+  e.preventDefault();const f=e.target;let b,en;
+  if(f.saat.value==="ozel"){
+    b=f.bas.value;en=f.bit.value;
+    if(!b||!en||dk(en)<=dk(b)){alert("Özel saat için geçerli bir başlangıç ve bitiş girin.");return}
+  }else{[b,en]=f.saat.value.split("-")}
+  try{await pull(true)}catch(_){}
+  liveW();
+  if(BLOCK){alert("Bu derslik aynı gün ve saatte başka bir derste kullanılıyor; kaydedilemez. Farklı bir derslik veya saat seçin.");return}
+  if(!$("#fw").hidden&&!confirm("Bu ders için çakışma uyarısı var. Yine de kaydedilsin mi?"))return;
+  if(f.yersec.value==="__yeni"&&!f.yeni.value.trim()){alert("Yeni derslik adını yazın.");return}
+  const d={bol:B,prog:ED?ED.prog:P,sinif:P==="lisans"?f.sinif.value:"",
+    kod:f.kod.value.trim().toLocaleUpperCase("tr"),ad:f.ad.value.trim(),hoca:f.hoca.value.trim(),
+    yer:yerV(f),kont:+f.kont.value||"",gun:f.gun.value,bas:b,bit:en};
+  const old=ED,rec=old?{...old,...d}:{id:uid(),...d};
+  $("#dl").close();
+  sync(B,`${bn(B)}: ${rec.kod} ${rec.gun} ${rec.bas}–${rec.bit}${old?" güncellendi":" eklendi"}`,a=>old?a.map(c=>c.id===old.id?rec:c):[...a,rec]);
+  if(f.yersec.value==="__yeni"&&d.yer&&!rooms().some(x=>ny(x[0])===ny(d.yer)))addRoom(d.yer,+f.ykap.value||0).catch(e=>alert("Derslik listeye eklenemedi: "+e.message));
+});
+$("#fx").onclick=()=>$("#dl").close();
+$("#fd").onclick=()=>{if(ED&&confirm("Bu ders silinsin mi?")){const o=ED;$("#dl").close();sync(B,`${bn(B)}: ${o.kod} silindi`,a=>a.filter(c=>c.id!==o.id))}};
+
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-b],[data-s],[data-p],[data-id],.add");if(!t)return;
+  if(t.dataset.b){B=t.dataset.b;ls("sbky_bol",B);render()}
+  else if(t.dataset.s){S=t.dataset.s;render()}
+  else if(t.dataset.p){P=t.dataset.p;render()}
+  else if(t.dataset.id){if(guard())openF(C.find(c=>c.id===t.dataset.id))}
+  else if(guard())openF(null,t.dataset.g,t.dataset.r);
+});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.dataset&&e.target.dataset.id)e.target.click()});
+$("#ad").onclick=()=>{if(guard())openF(null)};
+
+/* ---------- dışa aktarma ---------- */
+function dlf(data,type,name){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);
+}
+const XL=(()=>{
+  const en=new TextEncoder(),T=new Uint32Array(256);
+  for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;T[n]=c>>>0}
+  const crc=u=>{let c=-1;for(const b of u)c=T[(c^b)&255]^(c>>>8);return(c^-1)>>>0};
+  const w2=n=>[n&255,n>>8&255],w4=n=>[n&255,n>>8&255,n>>16&255,n>>24&255];
+  function zip(fs){
+    const P=[],Z=[];let o=0;
+    for(const f of fs){
+      const nm=en.encode(f.n),d=en.encode(f.d),c=crc(d),L=d.length;
+      const h=[80,75,3,4,20,0,0,8,0,0,0,0,33,0,...w4(c),...w4(L),...w4(L),...w2(nm.length),0,0];
+      P.push(new Uint8Array(h),nm,d);
+      Z.push(new Uint8Array([80,75,1,2,20,0,20,0,0,8,0,0,0,0,33,0,...w4(c),...w4(L),...w4(L),...w2(nm.length),0,0,0,0,0,0,0,0,0,0,0,0,...w4(o)]),nm);
+      o+=h.length+nm.length+L;
+    }
+    let cs=0;Z.forEach(p=>cs+=p.length);
+    const all=[...P,...Z,new Uint8Array([80,75,5,6,0,0,0,0,...w2(fs.length),...w2(fs.length),...w4(cs),...w4(o),0,0])];
+    let tot=0;all.forEach(p=>tot+=p.length);
+    const out=new Uint8Array(tot);let i=0;all.forEach(p=>{out.set(p,i);i+=p.length});
+    return out;
+  }
+  const E=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const X='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',N="http://schemas.openxmlformats.org/";
+  const STY=X+`<styleSheet xmlns="${N}spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+  function sheet(rows){
+    const w=rows[0].map((_,j)=>Math.min(50,Math.max(...rows.map(r=>String(r[j]||"").length))+2));
+    return X+`<worksheet xmlns="${N}spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${w.map((x,i)=>`<col min="${i+1}" max="${i+1}" width="${x}" customWidth="1"/>`).join("")}</cols><sheetData>${rows.map((r,i)=>`<row r="${i+1}">${r.map((v,j)=>`<c r="${String.fromCharCode(65+j)}${i+1}" t="inlineStr"${i?"":' s="1"'}><is><t>${E(v)}</t></is></c>`).join("")}</row>`).join("")}</sheetData></worksheet>`;
+  }
+  function build(sh){
+    const R=(i,t,tg)=>`<Relationship Id="rId${i}" Type="${N}officeDocument/2006/relationships/${t}" Target="${tg}"/>`;
+    return zip([
+      {n:"[Content_Types].xml",d:X+`<Types xmlns="${N}package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sh.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")}</Types>`},
+      {n:"_rels/.rels",d:X+`<Relationships xmlns="${N}package/2006/relationships">${R(1,"officeDocument","xl/workbook.xml")}</Relationships>`},
+      {n:"xl/workbook.xml",d:X+`<workbook xmlns="${N}spreadsheetml/2006/main" xmlns:r="${N}officeDocument/2006/relationships"><sheets>${sh.map((s,i)=>`<sheet name="${E(s.n)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join("")}</sheets></workbook>`},
+      {n:"xl/_rels/workbook.xml.rels",d:X+`<Relationships xmlns="${N}package/2006/relationships">${sh.map((_,i)=>R(i+1,"worksheet","worksheets/sheet"+(i+1)+".xml")).join("")}${R(sh.length+1,"styles","styles.xml")}</Relationships>`},
+      {n:"xl/styles.xml",d:STY},
+      ...sh.map((s,i)=>({n:`xl/worksheets/sheet${i+1}.xml`,d:sheet(s.rows)}))
+    ]);
+  }
+  return{build};
+})();
+function sheetRows(p,b){
+  const cf=conf(),L=p==="lisans";
+  const r=C.filter(c=>c.bol===b&&c.prog===p).sort((a,b)=>GUN.indexOf(a.gun)-GUN.indexOf(b.gun)||dk(a.bas)-dk(b.bas)||(a.sinif||"").localeCompare(b.sinif||"")||a.kod.localeCompare(b.kod));
+  return [["Gün","Başlangıç","Bitiş",...(L?["Sınıf"]:[]),"Ders Kodu","Ders Adı","Öğretim Üyesi","Derslik","Uyarı"],
+    ...r.map(c=>[c.gun,c.bas,c.bit,...(L?[c.sinif+". sınıf"]:[]),c.kod,c.ad,c.hoca,c.yer||"",(cf.get(c.id)||[]).join("; ")])];
+}
+function items(s){
+  if(s==="p")return[{b:B,p:P}];
+  return(s==="b"?[B]:BL.map(x=>x.k)).flatMap(b=>PR.map(x=>({b,p:x.k})));
+}
+const has=i=>C.some(c=>c.bol===i.b&&c.prog===i.p);
+function xl(s){
+  const l=items(s).filter(has);
+  if(!l.length){alert("Önce ders girin.");return}
+  dlf(XL.build(l.map(i=>({n:BL.find(x=>x.k===i.b).s+" "+pn(i.p),rows:sheetRows(i.p,i.b)}))),
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "ders-programi-"+(s==="p"?B+"-"+P:s==="b"?B:"tum-bolumler")+".xlsx");
+}
+function secs(s){
+  return items(s).filter(has).flatMap(i=>i.p!=="lisans"?[{...i,n:""}]:
+    ["1","2","3","4"].filter(n=>(s!=="p"||S==="hepsi"||S===n)&&C.some(c=>c.bol===i.b&&c.prog==="lisans"&&c.sinif===n)).map(n=>({...i,n})));
+}
+function pdf(s){
+  const l=secs(s);
+  if(!l.length){alert("Önce ders girin.");return}
+  $("#pa").innerHTML=l.map(i=>`<section class="ps"><h2>${esc(bn(i.b))} · ${esc(pn(i.p))}${i.n?" · "+i.n+". sınıf":""} Ders Programı</h2><p>Gaziantep Üniversitesi · ${esc(DON)} Yarıyılı</p>${grid(i.p,true,i.b,i.n||"hepsi")}</section>`).join("");
+  const t=document.title;document.title="Ders Programı "+DON;
+  window.print();document.title=t;
+}
+$("#xp").onclick=()=>xl("p");$("#xb").onclick=()=>xl("b");$("#xa").onclick=()=>xl("a");
+$("#pp").onclick=()=>pdf("p");$("#pb").onclick=()=>pdf("b");$("#pall").onclick=()=>pdf("a");
+
+/* ---------- yedek / yükle / dönem ---------- */
+$("#bk").onclick=()=>dlf(JSON.stringify({don:DON,dersler:C},null,1),"application/json","sbky-ders-programi-yedek.json");
+$("#ld").onchange=e=>{
+  const fl=e.target.files[0];if(!fl)return;
+  fl.text().then(t=>{
+    try{
+      const j=JSON.parse(t),a=Array.isArray(j)?j:j.dersler;
+      if(!Array.isArray(a))throw 0;
+      const n=a.filter(c=>c&&c.kod&&c.gun&&c.bas&&c.bit&&PR.some(x=>x.k===c.prog)).map(c=>({...c,bol:BL.some(x=>x.k===c.bol)?c.bol:"sbky",id:uid()}));
+      const nb=new Set(n.map(c=>c.bol));
+      if(C.some(c=>nb.has(c.bol))&&!confirm("Yedekteki bölümlerin mevcut dersleri yedektekilerle değiştirilecek. Devam edilsin mi?"))return;
+      if(!guard())return;
+      (async()=>{for(const b of nb)await sync(b,`${bn(b)}: yedekten yüklendi`,()=>n.filter(c=>c.bol===b))})();
+    }catch(_){alert("Dosya okunamadı.")}
+  });
+  e.target.value="";
+};
+$("#lg").onclick=async()=>{
+  if(CAN){TOK="";CAN=false;ls("sbky_tok","");loginUI();render();return}
+  const t=prompt("GitHub erişim anahtarı (token):");if(!t)return;
+  TOK=t.trim();await check();
+  if(CAN)ls("sbky_tok",TOK);else{TOK="";alert("Bu anahtarla depoya yazma izni doğrulanamadı.")}
+  loginUI();render();
+};
+(async()=>{
+  await check();
+  try{await pull(true);st("Güncel "+hm())}catch(e){st("Bağlantı hatası: "+e.message)}
+  loginUI();render();
+  setInterval(()=>{if(!document.hidden&&!$("#dl").open)pull().then(()=>st("Güncel "+hm())).catch(()=>st("Bağlantı hatası"))},45000);
+})();
+</script>
+</body>
+</html>
