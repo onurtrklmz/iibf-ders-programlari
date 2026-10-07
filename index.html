@@ -110,7 +110,7 @@ body{background:#fff}
   </div>
   <div class="gw" id="gw"></div>
   <section class="cl" id="cl" hidden><h2>Çakışma uyarıları · tüm bölümler</h2><ul id="cll"></ul></section>
-  <p class="hint">Veriler GitHub deposundaki data/ klasöründe tutulur; değişiklikler yaklaşık 45 saniyede herkese yansır. Düzenlemek için “Giriş” ile erişim anahtarınızı girin. PDF için yazdırma penceresinde “PDF olarak kaydet”i seçin. Hoca ve derslik çakışmaları bölümler arasında da kontrol edilir (UZEM hariç).</p>
+  <p class="hint">Veriler GitHub deposundaki data/ klasöründe tutulur; değişiklikler birkaç saniye içinde herkese yansır. Düzenlemek için “Giriş” ile erişim anahtarınızı girin. PDF için yazdırma penceresinde “PDF olarak kaydet”i seçin. Hoca ve derslik çakışmaları bölümler arasında da kontrol edilir (UZEM hariç).</p>
 </div>
 
 <dialog id="dl">
@@ -475,7 +475,17 @@ $("#lg").onclick=async()=>{
   await check();
   try{await pull(true);st("Güncel "+hm())}catch(e){st("Bağlantı hatası: "+e.message)}
   loginUI();render();
-  setInterval(()=>{if(!document.hidden&&!$("#dl").open)pull().then(()=>st("Güncel "+hm())).catch(()=>st("Bağlantı hatası"))},45000);
+  let PL=false,DL=2000;
+  const tick=()=>{
+    if(PL||document.hidden||$("#dl").open)return Promise.resolve();
+    PL=true;
+    return pull().then(()=>{st("Güncel "+hm());DL=2000})
+      .catch(()=>{st("Bağlantı hatası — yeniden denenecek");DL=Math.min(DL*2,30000)})
+      .finally(()=>{PL=false});
+  };
+  const loop=()=>tick().finally(()=>setTimeout(loop,DL));
+  loop();
+  document.addEventListener("visibilitychange",tick);window.addEventListener("focus",tick);
 })();
 </script>
 </body>
