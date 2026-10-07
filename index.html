@@ -110,7 +110,7 @@ body{background:#fff}
   </div>
   <div class="gw" id="gw"></div>
   <section class="cl" id="cl" hidden><h2>Çakışma uyarıları · tüm bölümler</h2><ul id="cll"></ul></section>
-  <p class="hint">Veriler GitHub deposundaki data/ klasöründe tutulur; değişiklikler birkaç saniye içinde herkese yansır. Düzenlemek için “Giriş” ile erişim anahtarınızı girin. PDF için yazdırma penceresinde “PDF olarak kaydet”i seçin. Hoca ve derslik çakışmaları bölümler arasında da kontrol edilir (UZEM hariç).</p>
+  <p class="hint">Veriler GitHub deposundaki data/ klasöründe tutulur; değişiklikler birkaç saniye içinde herkese yansır. Düzenlemek için bölüm kullanıcı adı ve parolanızla “Giriş” yapın; yalnızca kendi bölümünüzü düzenleyebilirsiniz. PDF için yazdırma penceresinde “PDF olarak kaydet”i seçin. Hoca ve derslik çakışmaları bölümler arasında da kontrol edilir (UZEM hariç).</p>
 </div>
 
 <dialog id="dl">
@@ -147,6 +147,15 @@ body{background:#fff}
   </div>
 </form>
 </dialog>
+<dialog id="lgd">
+<form class="f" id="lgf" method="dialog">
+  <h2>Giriş</h2>
+  <label>Kullanıcı adı<input id="lu" autocomplete="username" autocapitalize="none" required></label>
+  <label>Parola<input id="lp" type="password" autocomplete="current-password" required></label>
+  <div class="fw" id="le" hidden></div>
+  <div class="fb"><span class="sp"></span><button type="button" class="btn" id="lx">Vazgeç</button><button class="btn pri">Giriş</button></div>
+</form>
+</dialog>
 <div id="pa"></div>
 
 <script>
@@ -170,19 +179,32 @@ const TT=/^(prof|doç|dr|öğr|üyesi|arş|gör|uzm|öğretim|elemanı)\.?$/;
 const hs=s=>(s||"").toLocaleLowerCase("tr").split(/\s*[·;,\/&+]\s*/).map(n=>n.split(/\s+/).filter(w=>w&&!TT.test(w)).join(" ")).filter(Boolean);
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const cur=()=>PR.find(x=>x.k===P);
-let C=[],DONEM={donem:"",kilit:false},TOK=ls("sbky_tok")||"",CAN=false,SHA={},ETAG="";
+let C=[],DONEM={donem:"",kilit:false},USR=ls("sbky_usr")||"",TOK=USR&&ls("sbky_tok")||"",CAN=false,SHA={},ETAG="";
 let P="lisans",B=ls("sbky_bol")||"sbky",ED=null,S="hepsi",BLOCK=false,DON="";
 /* ---------- GitHub katmanı ---------- */
 const GH=(()=>{const m=location.hostname.match(/^(.+)\.github\.io$/);
   return{o:m?m[1]:"KULLANICI",r:(m&&location.pathname.split("/")[1])||"ders-programi",br:"main"}})();
 let EXTRA=[];
-const canEdit=()=>CAN&&!DONEM.kilit;
-const guard=()=>{if(canEdit())return true;alert(DONEM.kilit?"Dönem programı kilitli; düzenleme kapalı.":"Düzenlemek için önce “Giriş” ile GitHub erişim anahtarınızı girin.");return false};
+const KULL={sbky:"sbky",util:"ulustic",maliye:"maliye",iktisat:"iktisat",isletme:"isletme"};
+const UB=()=>KULL[USR]||"";
+const canEdit=()=>CAN&&!DONEM.kilit&&B===UB();
+const guard=()=>{if(canEdit())return true;
+  alert(DONEM.kilit?"Dönem programı kilitli; düzenleme kapalı.":!CAN?"Düzenlemek için önce “Giriş” yapın.":"Yalnızca kendi bölümünüzü ("+bn(UB())+") düzenleyebilirsiniz.");return false};
 const hm=()=>new Date().toLocaleTimeString("tr",{hour:"2-digit",minute:"2-digit"});
 const st=t=>{$("#st").textContent=t};
 const api=(path,o={})=>fetch(`https://api.github.com/repos/${GH.o}/${GH.r}${path?"/"+path:""}`,{...o,headers:{Accept:"application/vnd.github+json",...(TOK?{Authorization:"Bearer "+TOK}:{}),...(o.headers||{})}});
 const dec=b=>new TextDecoder().decode(Uint8Array.from(atob(b.replace(/\s/g,"")),c=>c.charCodeAt(0)));
 const enc=s=>{let b="";new TextEncoder().encode(s).forEach(x=>b+=String.fromCharCode(x));return btoa(b)};
+const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function unlock(u,pw){
+  const r=await fetch("kasa.json",{cache:"no-store"});
+  if(!r.ok)throw new Error("kasa");
+  const K=await r.json(),e=K.u&&K.u[u];
+  if(!e)throw new Error("bad");
+  const km=await crypto.subtle.importKey("raw",new TextEncoder().encode(u+":"+pw),"PBKDF2",false,["deriveKey"]);
+  const key=await crypto.subtle.deriveKey({name:"PBKDF2",salt:unb64(e.s),iterations:K.it,hash:"SHA-256"},km,{name:"AES-GCM",length:256},false,["decrypt"]);
+  return new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(e.i)},key,unb64(e.c)));
+}
 async function check(){
   CAN=false;if(!TOK)return;
   try{const r=await api("");CAN=r.ok&&!!(await r.json()).permissions?.push}catch(e){}
@@ -223,7 +245,7 @@ function sync(bol,msg,fn){
   return mutate(bol,msg,fn).then(()=>{st("Kaydedildi "+hm());render()})
     .catch(e=>{st("Hata");alert("Kaydedilemedi: "+e.message)});
 }
-const loginUI=()=>{$("#lg").textContent=CAN?"Çıkış":"Giriş";$("#ad").disabled=!canEdit();$("#don").value=DON};
+const loginUI=()=>{$("#lg").textContent=CAN?"Çıkış · "+USR:"Giriş";$("#ad").disabled=!canEdit();$("#don").value=DON};
 /* ---------- derslik listesi (Ders Düzeni kapasiteleri) ---------- */
 const DERS=[["Z-01",220],["Z-02",78],["Z-03",92],["Z-04",94],["Z-05",92],["Z-06",78],["Z-07",94],["Z-08",112],["A-101",200],["A-103",200],["D-102",56],["D-104",56]];
 const rooms=()=>[...DERS,...EXTRA.filter(x=>!DERS.some(d=>ny(d[0])===ny(x[0])))];
@@ -298,6 +320,7 @@ function render(){
   const L=conf().L,lab=c=>`${esc(c.kod)} (${esc(bn(c.bol))} · ${esc(pn(c.prog))}${c.prog==="lisans"?" · "+esc(c.sinif)+". sınıf":""})`;
   $("#wn").textContent=L.length?`⚠ ${L.length} çakışma uyarısı (tüm bölümler)`:"";
   $("#cl").hidden=!L.length;
+  $("#ad").disabled=!canEdit();
   $("#cll").innerHTML=L.map(([t,a,b])=>`<li><b>${t}</b> · ${a.gun} ${a.bas}–${a.bit}${t==="Derslik"?" · "+esc(a.yer):t==="Hoca"?" · "+esc(a.hoca):""} — ${lab(a)} ↔ ${lab(b)}</li>`).join("");
 }
 
@@ -458,19 +481,30 @@ $("#ld").onchange=e=>{
       const n=a.filter(c=>c&&c.kod&&c.gun&&c.bas&&c.bit&&PR.some(x=>x.k===c.prog)).map(c=>({...c,bol:BL.some(x=>x.k===c.bol)?c.bol:"sbky",id:uid()}));
       const nb=new Set(n.map(c=>c.bol));
       if(C.some(c=>nb.has(c.bol))&&!confirm("Yedekteki bölümlerin mevcut dersleri yedektekilerle değiştirilecek. Devam edilsin mi?"))return;
-      if(!guard())return;
+      if(!CAN||DONEM.kilit){guard();return}
+      if([...nb].some(b=>b!==UB())){alert("Yalnızca kendi bölümünüzün yedeğini yükleyebilirsiniz.");return}
       (async()=>{for(const b of nb)await sync(b,`${bn(b)}: yedekten yüklendi`,()=>n.filter(c=>c.bol===b))})();
     }catch(_){alert("Dosya okunamadı.")}
   });
   e.target.value="";
 };
-$("#lg").onclick=async()=>{
-  if(CAN){TOK="";CAN=false;ls("sbky_tok","");loginUI();render();return}
-  const t=prompt("GitHub erişim anahtarı (token):");if(!t)return;
-  TOK=t.trim();await check();
-  if(CAN)ls("sbky_tok",TOK);else{TOK="";alert("Bu anahtarla depoya yazma izni doğrulanamadı.")}
-  loginUI();render();
+const lerr=m=>{$("#le").textContent=m;$("#le").hidden=!m};
+$("#lg").onclick=()=>{
+  if(CAN){TOK="";USR="";CAN=false;ls("sbky_tok","");ls("sbky_usr","");loginUI();render();return}
+  lerr("");$("#lgd").showModal();
 };
+$("#lx").onclick=()=>$("#lgd").close();
+$("#lgf").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const u=$("#lu").value.trim().toLowerCase(),pw=$("#lp").value,bad="Kullanıcı adı veya parola hatalı.";
+  lerr("");
+  if(!KULL[u]){lerr(bad);return}
+  try{TOK=await unlock(u,pw)}catch(er){TOK="";lerr(er.message==="kasa"?"kasa.json bulunamadı; yöneticiye bildirin.":bad);return}
+  USR=u;await check();
+  if(!CAN){TOK="";USR="";lerr("Depoya yazma izni doğrulanamadı; yöneticiye bildirin.");return}
+  ls("sbky_tok",TOK);ls("sbky_usr",USR);B=KULL[u];ls("sbky_bol",B);
+  $("#lgd").close();$("#lp").value="";loginUI();render();
+});
 (async()=>{
   await check();
   try{await pull(true);st("Güncel "+hm())}catch(e){st("Bağlantı hatası: "+e.message)}
